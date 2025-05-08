@@ -1,0 +1,48 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# Load your dataset (e.g., NASA GISTEMP global temperature anomalies)
+# Sample CSV format: columns = ['Year', 'Anomaly']
+def load_data(filepath):
+    df = pd.read_csv(filepath)
+    df = df[['Year', 'Anomaly']]
+    df.dropna(inplace=True)
+    return df
+
+# Analyze trend using linear regression
+def analyze_trend(df):
+    X = df['Year'].values.reshape(-1, 1)
+    y = df['Anomaly'].values.reshape(-1, 1)
+
+    model = LinearRegression()
+    model.fit(X, y)
+    df['Trend'] = model.predict(X)
+
+    slope = model.coef_[0][0]
+    intercept = model.intercept_[0]
+    print(f"Linear Trend: Anomaly = {slope:.5f} * Year + {intercept:.2f}")
+    
+    return df, slope, intercept
+
+# Visualize trend
+def plot_trend(df):
+    plt.figure(figsize=(12, 6))
+    sns.lineplot(x='Year', y='Anomaly', data=df, label='Observed Anomaly', marker='o')
+    sns.lineplot(x='Year', y='Trend', data=df, label='Trend Line', color='red')
+    plt.title('Global Temperature Anomalies Over Time')
+    plt.xlabel('Year')
+    plt.ylabel('Temperature Anomaly (°C)')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+# Main
+if __name__ == "__main__":
+    filepath = 'global_temp_anomaly.csv'  # Replace with your file path
+    df = load_data(filepath)
+    df, slope, intercept = analyze_trend(df)
+    plot_trend(df)
