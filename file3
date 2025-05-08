@@ -1,0 +1,49 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+
+def load_data(filepath, columns):
+    df = pd.read_csv(filepath)
+    df = df[columns]
+    df.dropna(inplace=True)
+    return df
+
+def analyze_trend(df, x_col, y_col):
+    X = df[[x_col]].values
+    y = df[[y_col]].values
+
+    model = LinearRegression()
+    model.fit(X, y)
+    df['Trend'] = model.predict(X)
+
+    slope = model.coef_[0][0]
+    intercept = model.intercept_[0]
+    print(f"Linear Trend for {y_col}: {y_col} = {slope:.5f} * {x_col} + {intercept:.2f}")
+    
+    return df, slope, intercept
+
+def plot_trend(df, x_col, y_col, title, ylabel):
+    plt.figure(figsize=(12, 6))
+    sns.lineplot(x=x_col, y=y_col, data=df, label='Observed', marker='o')
+    sns.lineplot(x=x_col, y='Trend', data=df, label='Trend Line', color='red')
+    plt.title(title)
+    plt.xlabel(x_col)
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    # Example for regional temperature anomalies
+    temp_df = load_data('regional_temp_anomaly.csv', ['Year', 'Region', 'Anomaly'])
+    region = 'Africa'  # Specify the region of interest
+    temp_region_df = temp_df[temp_df['Region'] == region]
+    temp_region_df, temp_slope, temp_intercept = analyze_trend(temp_region_df, 'Year', 'Anomaly')
+    plot_trend(temp_region_df, 'Year', 'Anomaly', f'{region} Temperature Anomalies Over Time', 'Temperature Anomaly (°C)')
+
+    # Similarly, implement for other indicators and regions
+
+if __name__ == "__main__":
+    main()
